@@ -1,0 +1,1 @@
+{"version":1,"defects":{"App\\Tests\\Functional\\API\\Mono\\CheckCurrencyRateCommandTest::testExecuteSuccess#0":8},"times":{"App\\Tests\\Functional\\API\\Mono\\CheckCurrencyRateCommandTest::testConfigure":0.002,"App\\Tests\\Functional\\API\\Mono\\CheckCurrencyRateCommandTest::testExecuteSuccess#0":0.008}}
