@@ -7,10 +7,11 @@ namespace App\Tests\Functional;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
-final class CheckCurrencyRateCommandTest extends DbWebTestCase
+final class CheckCurrencyRateCommandTest extends WebTestCase
 {
     /**
      * @dataProvider getRates
@@ -30,7 +31,7 @@ final class CheckCurrencyRateCommandTest extends DbWebTestCase
 
         $httpClientMock->method('request')->willReturn(new Response($statusCode, [], (string) json_encode($clientResponse)));
 
-        $container->set('mono.client', $httpClientMock);
+        $container->set('http.client', $httpClientMock);
 
         $command = $container->get('App\Command\CheckCurrencyRateCommand');
         $application = new Application();
@@ -48,7 +49,7 @@ final class CheckCurrencyRateCommandTest extends DbWebTestCase
     }
 
     /**
-     * @return mixed[]
+     * @return array
      */
     public static function getRates(): array
     {
@@ -67,7 +68,7 @@ final class CheckCurrencyRateCommandTest extends DbWebTestCase
                     ['currencyCodeA' => 840, 'currencyCodeB' => 980, 'rateBuy' => 17.9, 'rateSell' => 35.2995],
                 ],
                 200,
-                'The rate decreased by 14.3',
+                'The rate decreased by 20',
             ],
         ];
     }

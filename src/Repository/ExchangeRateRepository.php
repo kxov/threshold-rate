@@ -25,15 +25,17 @@ class ExchangeRateRepository extends ServiceEntityRepository
     /**
      * @throws NonUniqueResultException
      */
-    public function getLastByCurrencyNumbers(int $currencyCodeA, int $currencyCodeB): ?ExchangeRate
+    public function getLastByCurrencyNumbers(string $currencyCodeA, string $currencyCodeB, string $rateKey): ?ExchangeRate
     {
         return $this->createQueryBuilder('er')
             ->select('er')
             ->where('er.currencyCodeA = :cCodeA')
             ->andWhere('er.currencyCodeB = :cCodeB')
+            ->andWhere('er.rateKey = :rateKey')
             ->setParameter('cCodeA', $currencyCodeA)
             ->setParameter('cCodeB', $currencyCodeB)
-            ->orderBy('er.recordedAt', 'DESC')
+            ->setParameter('rateKey', $rateKey)
+            ->orderBy('er.id', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();

@@ -6,5 +6,6 @@ namespace App\Client;
 
 interface CurrencyRateClientInterface
 {
-    public function getCurrencyRatesByNumbers(int $currencyCodeA, int $currencyCodeB);
+    public const RATE_KEY = 'RATE_KEY';
+    public function getCurrencyRatesByNumbers(string $currencyPair);
 }

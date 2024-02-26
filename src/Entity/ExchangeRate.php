@@ -19,31 +19,36 @@ class ExchangeRate
     #[Column(type: Types::INTEGER)]
     private int $id;
 
-    #[Column(type: Types::INTEGER, length: 3, nullable: false)]
-    private int $currencyCodeA;
+    #[Column(type: Types::STRING, length: 3, nullable: false)]
+    private string $currencyCodeA;
 
-    #[Column(type: Types::INTEGER, length: 3, nullable: false)]
-    private int $currencyCodeB;
+    #[Column(type: Types::STRING, length: 3, nullable: false)]
+    private string $currencyCodeB;
 
     #[Column(type: Types::DECIMAL, precision: 10, scale: 6)]
     private float $rateBuy;
     #[Column(type: Types::DECIMAL, precision: 10, scale: 6)]
     private float $rateSell;
 
+    #[Column(type: Types::STRING, length: 10)]
+    private string $rateKey;
+
     #[Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $recordedAt;
 
     public function __construct(
-        int $currencyCodeA,
-        int $currencyCodeB,
+        string $currencyCodeA,
+        string $currencyCodeB,
         float $rateBuy,
         float $rateSell,
+        string $rateKey,
     )
     {
         $this->currencyCodeA = $currencyCodeA;
         $this->currencyCodeB = $currencyCodeB;
         $this->rateBuy = $rateBuy;
         $this->rateSell = $rateSell;
+        $this->rateKey = $rateKey;
 
         $this->recordedAt = new \DateTimeImmutable();
     }
@@ -53,12 +58,12 @@ class ExchangeRate
         return $this->id;
     }
 
-    public function getCurrencyCodeA(): int
+    public function getCurrencyCodeA(): string
     {
         return $this->currencyCodeA;
     }
 
-    public function getCurrencyCodeB(): int
+    public function getCurrencyCodeB(): string
     {
         return $this->currencyCodeB;
     }
@@ -76,5 +81,10 @@ class ExchangeRate
     public function getRecordedAt(): \DateTimeImmutable
     {
         return $this->recordedAt;
+    }
+
+    public function getRateKey(): string
+    {
+        return $this->rateKey;
     }
 }

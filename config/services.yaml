@@ -27,23 +27,11 @@ services:
         arguments:
             $threshold: '%threshold%'
 
-    App\Service\NotificationSender:
+    App\Client\CurrencyRateClientInterface: '@App\Client\Provider\PrivatCurrencyRateApiClient'
+
+    App\Client\RequestClient:
         arguments:
-            $recipientEmail: '%recipient_email%'
-            $recipientPhone: '%recipient_phone%'
+            $client: '@http.client'
 
-    App\Client\CurrencyRateClientInterface: '@App\Client\MonoCurrencyRateApiClient'
-
-    App\Client\MonoCurrencyRateApiClient:
-        arguments:
-            $client: '@mono.client'
-
-    mono.client:
+    http.client:
         class: GuzzleHttp\Client
-        arguments:
-            - {
-                base_uri: '%env(MONO_BASE_URI)%',
-            }
-
-    Symfony\Component\Mailer\MailerInterface:
-        class: Symfony\Component\Mailer\Mailer\Dummy\DummyTransport

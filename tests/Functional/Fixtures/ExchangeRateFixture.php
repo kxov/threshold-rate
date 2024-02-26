@@ -16,10 +16,11 @@ final class ExchangeRateFixture extends Fixture implements FixtureInterface
     public function load(ObjectManager $manager): void
     {
         $exchangeRate = new ExchangeRate(
-            840,
-            980,
+            'USD',
+            'UAH',
             32.2,
             38.2,
+            'MONO'
         );
         $manager->persist($exchangeRate);
 

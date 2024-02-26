@@ -6,7 +6,6 @@ namespace App\Command;
 
 use App\Client\CurrencyRateApiClientException;
 use App\Service\CurrencyRateChecker;
-use App\Service\NotificationSender;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,7 +15,6 @@ class CheckCurrencyRateCommand extends Command
 {
     public function __construct(
         private readonly CurrencyRateChecker $currencyRateChecker,
-        private readonly NotificationSender $notificationSender
     )
     {
         parent::__construct();
@@ -41,7 +39,6 @@ class CheckCurrencyRateCommand extends Command
 
         if ($currencyCheckerResponse->getMessage() !== null) {
             $output->writeln($currencyCheckerResponse->getMessage());
-            $this->notificationSender->sendNotification($currencyCheckerResponse->getMessage());
         }
 
         return Command::SUCCESS;

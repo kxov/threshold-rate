@@ -11,12 +11,6 @@ use Doctrine\ORM\NonUniqueResultException;
 
 class CurrencyRateChecker
 {
-    private const CODE_TO_NUMBER_MAP = [
-        'UAH' => 980,
-        'USD' => 840,
-        'EUR' => 978,
-    ];
-
     public function __construct(
         private readonly string $threshold,
         private readonly CurrencyRateClientInterface $currencyRateClient,
@@ -27,15 +21,19 @@ class CurrencyRateChecker
 
     /**
      * @throws NonUniqueResultException
-     * @throws CurrencyRateCheckerException
      */
     public function checkExchangeRate(string $currencyPair): CurrencyRateCheckerResponse
     {
-        list($currencyCodeA, $currencyCodeB) = $this->getCurrencyNumbers($currencyPair);
-        list($currentRateBuy, $currentRateSell) = $this->currencyRateClient->getCurrencyRatesByNumbers($currencyCodeA, $currencyCodeB);
+        list($currentRateBuy, $currentRateSell) = $this->currencyRateClient->getCurrencyRatesByNumbers($currencyPair);
+        list($currencyCodeA, $currencyCodeB) = explode('/', $currencyPair);
 
         $result = null;
-        $prevExchangeRate = $this->exchangeRateRepository->getLastByCurrencyNumbers($currencyCodeA, $currencyCodeB);
+        $prevExchangeRate = $this->exchangeRateRepository->getLastByCurrencyNumbers(
+            $currencyCodeA,
+            $currencyCodeB,
+            $this->currencyRateClient::RATE_KEY
+        );
+
         if ($prevExchangeRate !== null) {
             $previousRateBuy = $prevExchangeRate->getRateBuy();
             $previousRateSell = $prevExchangeRate->getRateSell();
@@ -48,7 +46,15 @@ class CurrencyRateChecker
             );
         }
 
-        $this->exchangeRateRepository->add(new ExchangeRate($currencyCodeA, $currencyCodeB, $currentRateBuy, $currentRateSell));
+        $this->exchangeRateRepository->add(
+            new ExchangeRate(
+                $currencyCodeA,
+                $currencyCodeB,
+                $currentRateBuy,
+                $currentRateSell,
+                $this->currencyRateClient::RATE_KEY
+            )
+        );
 
         return new CurrencyRateCheckerResponse($result);
     }
@@ -70,21 +76,5 @@ class CurrencyRateChecker
         return $currentRateBuy > $previousRateBuy
             ? "The rate increased by " . abs($currentRateBuy - $previousRateBuy)
             : "The rate decreased by " . abs($currentRateBuy - $previousRateBuy);
-    }
-
-    /**
-     * @throws CurrencyRateCheckerException
-     */
-    private function getCurrencyNumbers(string $currencyPair): array
-    {
-        $currencyCodes = explode('/', $currencyPair);
-        $currencyCodeA = self::CODE_TO_NUMBER_MAP[$currencyCodes[0]] ?? null;
-        $currencyCodeB = self::CODE_TO_NUMBER_MAP[$currencyCodes[1]] ?? null;
-
-        if ($currencyCodeA === null || $currencyCodeB === null) {
-            throw new CurrencyRateCheckerException('Invalid currency pair');
-        }
-
-        return [$currencyCodeA, $currencyCodeB];
     }
 }
