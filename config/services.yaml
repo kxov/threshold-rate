@@ -27,7 +27,9 @@ services:
         arguments:
             $threshold: '%threshold%'
 
-    App\Client\CurrencyRateClientInterface: '@App\Client\Provider\PrivatCurrencyRateApiClient'
+    _instanceof:
+        App\Client\CurrencyRateClientInterface:
+            tags: ['app.currency.client']
 
     App\Client\RequestClient:
         arguments:

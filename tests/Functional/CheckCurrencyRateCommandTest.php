@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Response;
+use App\Client\Provider\MonoCurrencyRateApiClient;
+use App\Client\Provider\PrivatCurrencyRateApiClient;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Application;
@@ -18,20 +18,27 @@ final class CheckCurrencyRateCommandTest extends WebTestCase
      */
     public function testExecuteSuccess(
         string $input,
-        array $clientResponse,
+        array $privatResponse,
+        array $monoResponse,
         int $statusCode,
         string $expectedResponse
     ): void
     {
         self::bootKernel();
         $container = static::getContainer();
-        $httpClientMock = $this->getMockBuilder(Client::class)
+        $privatClient = $this->getMockBuilder(PrivatCurrencyRateApiClient::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $httpClientMock->method('request')->willReturn(new Response($statusCode, [], (string) json_encode($clientResponse)));
+        $privatClient->method('getCurrencyRatesByNumbers')->willReturn($privatResponse);
+        $container->set(PrivatCurrencyRateApiClient::class, $privatClient);
 
-        $container->set('http.client', $httpClientMock);
+        $monoClient = $this->getMockBuilder(MonoCurrencyRateApiClient::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $monoClient->method('getCurrencyRatesByNumbers')->willReturn($monoResponse);
+        $container->set(MonoCurrencyRateApiClient::class, $monoClient);
 
         $command = $container->get('App\Command\CheckCurrencyRateCommand');
         $application = new Application();
@@ -56,19 +63,17 @@ final class CheckCurrencyRateCommandTest extends WebTestCase
         return [
             [
                 'USD/UAH',
-                [
-                    ['currencyCodeA' => 840, 'currencyCodeB' => 980, 'rateBuy' => 37.9, 'rateSell' => 38.2995],
-                ],
+                [37.9, 38.2995],
+                [37.9, 38.2995],
                 200,
-                'The rate increased by 5.7',
+                'MONO# The rate increased by 5.7 ',
             ],
             [
                 'USD/UAH',
-                [
-                    ['currencyCodeA' => 840, 'currencyCodeB' => 980, 'rateBuy' => 17.9, 'rateSell' => 35.2995],
-                ],
+                [17.9, 35.2995],
+                [17.9,35.2995],
                 200,
-                'The rate decreased by 20',
+                'MONO# The rate decreased by 20 PRIVAT# The rate decreased by 20 ',
             ],
         ];
     }

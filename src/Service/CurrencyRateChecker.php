@@ -8,12 +8,14 @@ use App\Client\CurrencyRateClientInterface;
 use App\Entity\ExchangeRate;
 use App\Repository\ExchangeRateRepository;
 use Doctrine\ORM\NonUniqueResultException;
+use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
 class CurrencyRateChecker
 {
     public function __construct(
         private readonly string $threshold,
-        private readonly CurrencyRateClientInterface $currencyRateClient,
+        #[TaggedIterator('app.currency.client')]
+        private readonly iterable $clients,
         private readonly ExchangeRateRepository $exchangeRateRepository
     )
     {
@@ -24,37 +26,41 @@ class CurrencyRateChecker
      */
     public function checkExchangeRate(string $currencyPair): CurrencyRateCheckerResponse
     {
-        list($currentRateBuy, $currentRateSell) = $this->currencyRateClient->getCurrencyRatesByNumbers($currencyPair);
-        list($currencyCodeA, $currencyCodeB) = explode('/', $currencyPair);
-
         $result = null;
-        $prevExchangeRate = $this->exchangeRateRepository->getLastByCurrencyNumbers(
-            $currencyCodeA,
-            $currencyCodeB,
-            $this->currencyRateClient::RATE_KEY
-        );
+        /** @var CurrencyRateClientInterface $client */
+        foreach ($this->clients as $client) {
+            list($currentRateBuy, $currentRateSell) = $client->getCurrencyRatesByNumbers($currencyPair);
+            list($currencyCodeA, $currencyCodeB) = explode('/', $currencyPair);
 
-        if ($prevExchangeRate !== null) {
-            $previousRateBuy = $prevExchangeRate->getRateBuy();
-            $previousRateSell = $prevExchangeRate->getRateSell();
-
-            $result = $this->calculateAndFormatRateDiff(
-                $currentRateBuy,
-                $previousRateBuy,
-                $currentRateSell,
-                $previousRateSell
-            );
-        }
-
-        $this->exchangeRateRepository->add(
-            new ExchangeRate(
+            $prevExchangeRate = $this->exchangeRateRepository->getLastByCurrencyNumbers(
                 $currencyCodeA,
                 $currencyCodeB,
-                $currentRateBuy,
-                $currentRateSell,
-                $this->currencyRateClient::RATE_KEY
-            )
-        );
+                $client::RATE_KEY
+            );
+
+            if ($prevExchangeRate !== null) {
+                $previousRateBuy = $prevExchangeRate->getRateBuy();
+                $previousRateSell = $prevExchangeRate->getRateSell();
+
+                $result[] = $this->calculateAndFormatRateDiff(
+                    $currentRateBuy,
+                    $previousRateBuy,
+                    $currentRateSell,
+                    $previousRateSell,
+                    $client::RATE_KEY
+                );
+            }
+
+            $this->exchangeRateRepository->add(
+                new ExchangeRate(
+                    $currencyCodeA,
+                    $currencyCodeB,
+                    $currentRateBuy,
+                    $currentRateSell,
+                    $client::RATE_KEY
+                )
+            );
+        }
 
         return new CurrencyRateCheckerResponse($result);
     }
@@ -63,7 +69,8 @@ class CurrencyRateChecker
         float $currentRateBuy,
         float $previousRateBuy,
         float $currentRateSell,
-        float $previousRateSell
+        float $previousRateSell,
+        string $providerKey,
     ): ?string
     {
         if (abs($currentRateBuy - $previousRateBuy) <= $this->threshold &&
@@ -73,8 +80,8 @@ class CurrencyRateChecker
             return null;
         }
 
-        return $currentRateBuy > $previousRateBuy
+        return $providerKey .'# '. ($currentRateBuy > $previousRateBuy
             ? "The rate increased by " . abs($currentRateBuy - $previousRateBuy)
-            : "The rate decreased by " . abs($currentRateBuy - $previousRateBuy);
+            : "The rate decreased by " . abs($currentRateBuy - $previousRateBuy)) . ' ';
     }
 }

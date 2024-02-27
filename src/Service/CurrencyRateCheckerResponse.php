@@ -6,14 +6,14 @@ namespace App\Service;
 
 class CurrencyRateCheckerResponse
 {
-    private ?string $message;
+    private ?array $message;
 
     public function __construct($message)
     {
         $this->message = $message;
     }
 
-    public function getMessage(): ?string
+    public function getMessage(): ?array
     {
         return $this->message;
     }
