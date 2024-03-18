@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Fixtures;
 
-use App\Entity\ExchangeRate;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\FixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use kxov\ThresholdRateBundle\Entity\ExchangeRate;
 
 final class ExchangeRateFixture extends Fixture implements FixtureInterface
 {

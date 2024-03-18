@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3a22687845f5b820a71bff8cf0ce153a",
+    "content-hash": "402b35dbe1a3cbc145c1682359236a22",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -1795,6 +1795,47 @@
                 }
             ],
             "time": "2023-12-03T20:05:35+00:00"
+        },
+        {
+            "name": "kxov/threshold-rate-bundle",
+            "version": "1.1.0",
+            "dist": {
+                "type": "path",
+                "url": "./bundles/ThresholdRateBundle",
+                "reference": "42d966ee289595993ca2aa4a3f826dd481759bca"
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "type": "symfony-bundle",
+            "extra": {
+                "symfony": {
+                    "allow-contrib": false,
+                    "require": "5.0.*"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "kxov\\ThresholdRateBundle\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "kxov\\ThresholdRateBundle\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "./vendor/bin/simple-phpunit"
+                ]
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "Symfony threshold bundle",
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "lorenzo/pinky",
